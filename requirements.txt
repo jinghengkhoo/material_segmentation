@@ -1,0 +1,10 @@
+Pillow==7.2.0
+Shapely==1.7.1
+scikit-image==0.17.2
+numpy
+scipy
+pytorch==0.4.1
+torchvision
+opencv3
+yacs
+tqdm
