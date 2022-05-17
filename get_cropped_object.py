@@ -45,8 +45,8 @@ for i in range(len(annots)):
                 
         cv2.fillPoly(mask, np.int32([pts]), color = (255,255,255))
         result = cv2.bitwise_and(orig_img, mask)
-	change_mask = result[:,:,2] ==0
-        result[change_mask]=[255, 255, 255]
+        change_mask = result[:,:,2] == 0
+        result[change_mask] = [255,255,255]
 
         cv2.imwrite('results/'+ str(crop_region) + '.jpg', result)
 
