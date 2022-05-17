@@ -2,11 +2,13 @@ Procedure to implement the Material Segmentation to get the cropped region(floor
 
 
 Step-1  
-a. Download the weights from the drive and put it in ckpt/ade20k-hrnetv2-c1
+a. Create a folder ckpt/ade20k-hrnetv2-c1
+
+b. Download the weights from the drive and put it in ckpt/ade20k-hrnetv2-c1
 
 link - https://drive.google.com/drive/folders/1Tbi_ym_j5cRPR1RNzSojXDvwKuKAAxMj?usp=sharing
 
-b. to generate the segmentation mask run the following command
+c. to generate the segmentation mask run the following command
 
 python3 -u test.py --imgs $PATH_IMG --gpu $GPU --cfg $CFG
 
