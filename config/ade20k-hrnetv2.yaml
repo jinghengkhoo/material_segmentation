@@ -39,4 +39,4 @@ TEST:
   checkpoint: "epoch_30.pth"
   result: "./"
 
-DIR: "ckpt/ade20k-hrnetv2-c1"
+DIR: "/usr/src/app/material_segmentation/ckpt/ade20k-hrnetv2-c1"

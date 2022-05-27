@@ -2,18 +2,14 @@
 # coding: utf-8
 
 # In[ ]:
-
-
-import glob
-
-from src.create_annotations import *
+from .src.create_annotations import *
 
 # Label ids of the dataset
 category_ids = {
     "outlier": 0,
     "floor": 1,
     "wall": 2,
-    "celing": 3,
+    "ceiling": 3,
     "rug": 4, 
 }
 
@@ -41,15 +37,13 @@ def images_annotations_info(mask_image):
     #for mask_image in glob.glob(maskpath + "*.png"):
         # The mask image is *.png but the original image is *.jpg.
         # We make a reference to the original file in the COCO JSON file
-    original_file_name = os.path.basename(mask_image).split(".")[0] + ".jpg"
-        
-    print("The name of original file name: ", original_file_name)
-
+    #original_file_name = os.path.basename(mask_image).split(".")[0] + ".jpg"
         # Open the image and (to be sure) we convert it to RGB
-    mask_image_open = Image.open(mask_image).convert('RGB')
+    mask_image_open = cv2.cvtColor(mask_image, cv2.COLOR_BGR2RGB)
+    mask_image_open = Image.fromarray(mask_image_open)
     w, h = mask_image_open.size
         # "images" info 
-    image = create_image_annotation(original_file_name, w, h, image_id)
+    image = create_image_annotation(w, h, image_id)
     images.append(image)
         
 
@@ -59,7 +53,7 @@ def images_annotations_info(mask_image):
         if color in category_colors.keys():
             category_id = category_colors[color]
 
-                # "annotations" info
+            # "annotations" info
             polygons, segmentations = create_sub_mask_annotation(sub_mask)
 
             # Check if we have classes that are a multipolygon
@@ -83,23 +77,21 @@ def images_annotations_info(mask_image):
         image_id += 1
     return images, annotations, annotation_id
 
-if __name__ == "__main__":
+def create_json_mask(mask_image):
     # Get the standard COCO JSON format
     coco_format = get_coco_json_format()
-    
-    mask_image = "room.png"
         
-        # Create category section
+    # Create category section
     coco_format["categories"] = create_category_annotation(category_ids)
     
-        # Create images and annotations sections
-    coco_format["images"], coco_format["annotations"], annotation_cnt = images_annotations_info(mask_image)
+    # Create images and annotations sections
+    coco_format["images"], coco_format["annotations"], _ = images_annotations_info(mask_image)
 
-    with open(mask_image.split('.')[0]+'.json' , "w") as outfile:
+    return coco_format
+
+
+if __name__ == '__main__':
+    room = cv2.imread("room.png")
+    coco_format = create_json_mask(room)
+    with open('room.json' , "w") as outfile:
         json.dump(coco_format, outfile,indent=4)
-        
-    print("Created %d annotations for images in folder: %s" % (annotation_cnt, mask_image))
-
-
-
-

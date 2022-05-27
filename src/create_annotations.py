@@ -54,6 +54,7 @@ def create_sub_mask_annotation(sub_mask):
         polygons.append(poly)
 
         segmentation = np.array(poly.exterior.coords).ravel().tolist()
+        segmentation = [0 if i < 0 else i for i in segmentation]
         segmentations.append(segmentation)
     
     return polygons, segmentations
@@ -71,9 +72,8 @@ def create_category_annotation(category_dict):
 
     return category_list
 
-def create_image_annotation(file_name, width, height, image_id):
+def create_image_annotation(width, height, image_id):
     images = {
-        "file_name": file_name,
         "height": height,
         "width": width,
         "id": image_id
