@@ -4,30 +4,11 @@
 # In[ ]:
 from .src.create_annotations import *
 
-# Label ids of the dataset
-category_ids = {
-    "outlier": 0,
-    "floor": 1,
-    "wall": 2,
-    "ceiling": 3,
-    "rug": 4, 
-}
-
-# Define which colors match which categories in the images
-category_colors = {
-    "(0, 0, 0)": 0, # Outlier
-    "(80, 50, 50)": 1, # floor
-    "(120, 120, 120)": 2, # Wall
-    "(120, 120, 80)": 3, # cieling
-    "(255, 9, 92)": 4, # rug
-  
- }
-
 # Define the ids that are a multiplolygon. In our case: wall, roof and sky
 #multipolygon_ids = [2, 5, 6]
 
 # Get "images" and "annotations" info 
-def images_annotations_info(mask_image):
+def images_annotations_info(mask_image, category_colors):
     # This id will be automatically increased as we go
     annotation_id = 0
     image_id = 0
@@ -77,7 +58,7 @@ def images_annotations_info(mask_image):
         image_id += 1
     return images, annotations, annotation_id
 
-def create_json_mask(mask_image):
+def create_json_mask(mask_image, category_ids, category_colors):
     # Get the standard COCO JSON format
     coco_format = get_coco_json_format()
         
@@ -85,7 +66,7 @@ def create_json_mask(mask_image):
     coco_format["categories"] = create_category_annotation(category_ids)
     
     # Create images and annotations sections
-    coco_format["images"], coco_format["annotations"], _ = images_annotations_info(mask_image)
+    coco_format["images"], coco_format["annotations"], _ = images_annotations_info(mask_image, category_colors)
 
     return coco_format
 

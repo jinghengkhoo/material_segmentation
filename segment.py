@@ -93,7 +93,7 @@ def main(segmentation_module, loader_test, cfg, gpu):
     return segment_image
 
 
-def generate_segment_image(img_path, cfg, segmentation_module):
+def generate_segment_image(img_path, cfg, segmentation_module, use_second_gpu):
     imgs = [img_path]
     cfg.list_test = [{'fpath_img': x} for x in imgs]
 
@@ -111,6 +111,6 @@ def generate_segment_image(img_path, cfg, segmentation_module):
     if not os.path.isdir(cfg.TEST.result):
         os.makedirs(cfg.TEST.result)
 
-    segment_image = main(segmentation_module, loader_test, cfg, gpu=0)
+    segment_image = main(segmentation_module, loader_test, cfg, gpu=use_second_gpu)
 
     return segment_image

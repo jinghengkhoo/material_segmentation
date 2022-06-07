@@ -34,7 +34,8 @@ def preprocess(img, input_shape, transpose=(2, 0, 1), letter_box=False):
     else:
         img = cv2.resize(img, (input_shape[1], input_shape[0]))
 
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = np.dstack([img, img, img])
     img = img.astype(np.float32)
     #img /= 255.0
     return img

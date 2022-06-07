@@ -32,7 +32,7 @@ def material_recog_run(input_image, class_model):
     material = mat_names[result_args[idx]]
     print("isaac raw")
     print(material, result[idx].item())
-    return material, result[idx].item()
+    return material, np.exp(result[idx].item())
 
 import torch
 if __name__ == "__main__":
