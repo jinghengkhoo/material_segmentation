@@ -11,7 +11,7 @@ from .material import material_recog_run
 from .triton_wood import wood_process
 
 
-def material_segmentation(input_image_path, cfg, segmentation_module, class_model, use_second_gpu):
+def material_segmentation(input_image_path, cfg, segmentation_module, use_second_gpu):
 
 	#generate segment image
     segment_image = generate_segment_image(input_image_path, cfg, segmentation_module, use_second_gpu)
@@ -58,8 +58,8 @@ def material_segmentation(input_image_path, cfg, segmentation_module, class_mode
     for name, crop in (crops.items()):
         filename = f'static/objects/{str(uuid.uuid4())}.png'
         cv2.imwrite(filename, crop)
-        confidence, label = wood_process(crop)
-        material, material_conf = material_recog_run(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB), class_model)
+        confidence, label, prop = wood_process(crop)
+        material, material_conf = material_recog_run(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
         color, color_hex = get_pixelvalues(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
         object_dict = {
 			"bbox": bbox[name],
@@ -75,6 +75,7 @@ def material_segmentation(input_image_path, cfg, segmentation_module, class_mode
         if material == "Wood" or name == "floor":
             object_dict["attributes"]["type"] = label
             object_dict["attributes"]["type_confidence"] = confidence
+            object_dict["attributes"]["property"] = prop
         object_dict["attributes"]["material"] = material
         object_dict["attributes"]["material_conf"] = material_conf
         res.append(object_dict)

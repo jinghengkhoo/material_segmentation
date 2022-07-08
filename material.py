@@ -1,42 +1,53 @@
 import cv2
 import numpy as np
-from torch.autograd import Variable
-from torchvision import transforms
+import tritonclient.grpc as grpcclient
 
-def material_recog_run(input_image, class_model):
+INPUT_HEIGHT = 224
+INPUT_WIDTH = 224
 
-    mat_names = ["Cloth", "Glass", "Leather", "Others", "Plastic", "Porcelain", "Metal", "Wood"]
-    test_transforms = transforms.Compose([transforms.Resize(224),
-                                      transforms.ToTensor(),
-                                     ])
+def preprocess(img, input_shape):
+    img = cv2.resize(img, (input_shape[1], input_shape[0]))
+    img = img.astype(np.float32)
+    return img
 
-    to_pil = transforms.ToPILImage()
+def material_recog_run(input_image):
+    """
+    Run material recognition model
+    input_image is opencv RGB image
+    returns material name and confidence item
+    """
 
-    full_masked_pp = to_pil(input_image)
+    mat_names = ['Bricks', 'Fabric', 'Foliage', 'Glass', 'Leather', 'Metal', 'Paper', 'Plastic', 'Stone', 'Water', 'Wood']
 
-    #use the crop image for prediction
-    #class_model = class_model.to(device)
-    image_tensor = test_transforms(full_masked_pp).float()
-    image_tensor = image_tensor.unsqueeze_(0)
-    input = Variable(image_tensor)
-    input = input.to('cuda:0')
-    output = class_model(input)
-    output_numpy = output.data.cpu().numpy()
-    for score in output_numpy:
-        temp = np.argpartition(-score, 3)
-        result_args = temp[:3]
-        temp = np.partition(-score,3)
-        result = -temp[:3]
+    #start_time = time.time()
+    model_name = "material"
+    # Create server context
+    triton_client = grpcclient.InferenceServerClient(
+        url='triton:8001',
+        verbose=False,
+        ssl=False,
+        root_certificates=None,
+        private_key=None,
+        certificate_chain=None)
+    
+    inputs = []
+    outputs = []
+    inputs.append(grpcclient.InferInput('input_1', [1, INPUT_WIDTH, INPUT_HEIGHT, 3], "FP32"))
+    outputs.append(grpcclient.InferRequestedOutput('dense_2'))
 
-    idx = np.argmax(result)
-    material = mat_names[result_args[idx]]
-    print("isaac raw")
-    print(material, result[idx].item())
-    return material, np.exp(result[idx].item())
 
-import torch
-if __name__ == "__main__":
-    #init model
-    CLASS_MODEL = torch.jit.load("models/traced_resnet_model.pt")
-    CLASS_MODEL.eval()
-    print(material_recog_run(cv2.cvtColor(cv2.imread("walnut.jpg"), cv2.COLOR_BGR2RGB), CLASS_MODEL))
+    input_image_buffer = preprocess(input_image, [INPUT_WIDTH, INPUT_HEIGHT])
+    input_image_buffer = np.expand_dims(input_image_buffer, axis=0)
+    inputs[0].set_data_from_numpy(input_image_buffer)
+
+    results = triton_client.infer(model_name=model_name,
+                                inputs=inputs,
+                                outputs=outputs,
+                                client_timeout=None)
+    prediction = results.as_numpy('dense_2')
+
+    prediction = prediction.reshape(-1,)
+    id = np.argmax(prediction)
+    conf = prediction[id].item()
+    material = mat_names[id]
+    return material, conf
